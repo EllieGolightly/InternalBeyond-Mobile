@@ -1,0 +1,55 @@
+diff --git a/index.html b/index.html
+index 6328cd7..3f40b07 100644
+--- a/index.html
++++ b/index.html
+@@ -8332,6 +8332,34 @@ function buildTypingRow(name,avaSrc){
+   row.appendChild(body);
+   return{row:row,bubble:d,txtEl:d.querySelector('.m-text'),thWrap:tw,thEl:tw.querySelector('.think-b')};
+ }
++/* 自用定制（feat/retry-failed-msg）：最新一轮请求失败后的重试卡。
++   用户消息在 sendMsg 阶段已落库并上屏，重试只需对同一条消息重新请求一次 AI 回复，
++   不重发、不复制消息。仅服务最新一轮：genReply 开始时清空，切换对话时消息盒整体重绘自然消失。 */
++let _retryPillM=null;
++function _clearRetryPillM(){try{if(_retryPillM&&_retryPillM.isConnected)_retryPillM.remove()}catch(e){}_retryPillM=null}
++function _showRetryPillM(cfg,myMsgs){
++  try{
++    const last=myMsgs&&myMsgs[myMsgs.length-1];
++    if(!last||last.role!=='user')return;/* 兜底：末尾不是用户消息（已有回复落库）就不挂重试 */
++    _clearRetryPillM();
++    const box0=convEl('cv-msgs');if(!box0)return;
++    const row=document.createElement('div');row.className='mrow ai';
++    const c=document.createElement('div');c.className='ws-op-card fail';
++    const t=document.createElement('span');t.className='ws-op-text';t.textContent='发送失败，点右侧重新请求回复';
++    const b=document.createElement('button');b.className='ws-file-btn';b.textContent='↻ 重试';
++    b.addEventListener('click',function(ev){
++      ev.stopPropagation();
++      if(!_activeCfg||_activeCfg.id!==cfg.id){toast('对话已切换');return}
++      if(_sendKeys.has(_convKey(_activeCfg))){toast('正在发送中');return}
++      const rc=_cfgs.find(function(a){return a.id===cfg.id})||cfg;/* 重试时取最新配置（Key/模型可能刚改过） */
++      _clearRetryPillM();
++      genReply(rc);
++    });
++    c.appendChild(t);c.appendChild(b);row.appendChild(c);
++    box0.appendChild(row);_retryPillM=row;
++    if(box0.scrollHeight-box0.scrollTop-box0.clientHeight<200)box0.scrollTop=box0.scrollHeight;
++  }catch(e){}
++}
+ async function genReply(cfg,internalCtx){
+   if(!cfg)return;
+   const myThread=_activeThread;
+@@ -8357,6 +8385,7 @@ async function genReply(cfg,internalCtx){
+     if(nearBottom)box.scrollHeight-box.scrollTop-box.clientHeight;
+   };
+   try{
++    _clearRetryPillM();/* 自用定制：新一轮请求开始（含点重试），清掉上一轮失败卡 */
+     _sending=true;sendBtnState(true);_ac=myAc;
+     box=convEl('cv-msgs');
+     const _tp=buildTypingRow(cfgName(cfg),_pfAvatar(cfg));
+@@ -8449,6 +8478,7 @@ async function genReply(cfg,internalCtx){
+     }else{
+       if(aiEl&&aiEl.isConnected)aiEl.remove();
+       toast((sameConv()?'':cfgName(cfg)+'：')+'请求失败：'+(err&&err.message?err.message:'未知错误'));
++      if(sameConv()&&!cfg._group)_showRetryPillM(cfg,myMsgs);/* 自用定制：最新一轮发送失败，挂重试卡（群聊走 genReplyGroup，不在此处理） */
+     }
+   }finally{
+     _sendKeys.delete(myKey);delete _acMap[myKey];
