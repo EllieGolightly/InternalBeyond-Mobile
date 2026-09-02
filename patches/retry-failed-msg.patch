@@ -38,7 +38,7 @@ index 6328cd7..3f40b07 100644
    if(!cfg)return;
    const myThread=_activeThread;
 @@ -8357,6 +8385,7 @@ async function genReply(cfg,internalCtx){
-     if(nearBottom)box.scrollHeight-box.scrollTop-box.clientHeight;
+     if(nearBottom)box.scrollTop=box.scrollHeight;
    };
    try{
 +    _clearRetryPillM();/* 自用定制：新一轮请求开始（含点重试），清掉上一轮失败卡 */
