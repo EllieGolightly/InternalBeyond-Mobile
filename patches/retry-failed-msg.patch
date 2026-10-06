@@ -1,8 +1,8 @@
 diff --git a/index.html b/index.html
-index 4176451..cdadfb7 100644
+index ca95828..fc4db5f 100644
 --- a/index.html
 +++ b/index.html
-@@ -9404,6 +9404,34 @@ function buildTypingRow(name,avaSrc){
+@@ -9416,6 +9416,34 @@ function buildTypingRow(name,avaSrc){
    row.appendChild(body);
    return{row:row,bubble:d,txtEl:d.querySelector('.m-text'),thWrap:tw,thEl:tw.querySelector('.think-b')};
  }
@@ -37,7 +37,7 @@ index 4176451..cdadfb7 100644
  async function genReply(cfg,internalCtx){
    if(!cfg)return;
    const myThread=_activeThread;
-@@ -9431,6 +9459,7 @@ async function genReply(cfg,internalCtx){
+@@ -9443,6 +9471,7 @@ async function genReply(cfg,internalCtx){
      if(nearBottom)box.scrollTop=box.scrollHeight;
    };
    try{
@@ -45,7 +45,7 @@ index 4176451..cdadfb7 100644
      _sending=true;sendBtnState(true);_ac=myAc;
      box=convEl('cv-msgs');
      const _tp=buildTypingRow(cfgName(cfg),_pfAvatar(cfg));
-@@ -9531,6 +9560,7 @@ async function genReply(cfg,internalCtx){
+@@ -9543,6 +9572,7 @@ async function genReply(cfg,internalCtx){
      }else{
        if(aiEl&&aiEl.isConnected)aiEl.remove();
        toast((sameConv()?'':cfgName(cfg)+'：')+'请求失败：'+(err&&err.message?err.message:'未知错误'));
